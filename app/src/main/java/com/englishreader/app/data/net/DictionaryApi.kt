@@ -26,17 +26,17 @@ object DictionaryApi {
     fun parse(body: String): DictionaryResult? {
         val arr = JSONArray(body)
         if (arr.length() == 0) return null
-        var phonetic = ""
+        val phoneticCandidates = ArrayList<String>()
         var audio: String? = null
         val defs = ArrayList<Pair<String, String>>() // pos to definition
         val examples = LinkedHashSet<String>()
         for (i in 0 until arr.length()) {
             val entry = arr.getJSONObject(i)
-            if (phonetic.isEmpty()) phonetic = entry.optString("phonetic")
+            entry.optString("phonetic").takeIf { it.isNotBlank() }?.let { phoneticCandidates += it }
             entry.optJSONArray("phonetics")?.let { ph ->
                 for (j in 0 until ph.length()) {
                     val p = ph.getJSONObject(j)
-                    if (phonetic.isEmpty()) phonetic = p.optString("text")
+                    p.optString("text").takeIf { it.isNotBlank() }?.let { phoneticCandidates += it }
                     val a = p.optString("audio")
                     if (audio == null && a.isNotBlank()) audio = if (a.startsWith("//")) "https:$a" else a
                 }
@@ -57,6 +57,9 @@ object DictionaryApi {
             }
         }
         if (defs.isEmpty()) return null
+        // Skip fragments such as "/ˈkjɔː-/" and prefer a complete transcription.
+        val phonetic = phoneticCandidates.firstOrNull { c -> c.trim('/', '[', ']', ' ').let { t -> !t.startsWith("-") && !t.endsWith("-") } }
+            ?: phoneticCandidates.firstOrNull().orEmpty()
         val definition = if (defs.size == 1) defs[0].second
         else defs.mapIndexed { i, (pos, d) -> "${i + 1}. ${if (pos.isNotBlank()) "($pos) " else ""}$d" }.joinToString("\n")
         return DictionaryResult(

@@ -106,6 +106,18 @@ class RepositoryDeviceTest {
         assertEquals(l.definition, again.definition)
     }
 
+    @Test fun offlineTranslationPack() = runBlocking {
+        assertTrue("model download", c.offlineTranslator.download())
+        val words = listOf("curious", "lighthouse", "fragile", "struggling", "harbor")
+        for (w in words) {
+            val ar = c.offlineTranslator.translate(w)
+            android.util.Log.i("LookupTest", "offline $w -> $ar")
+            assertTrue(w, !ar.isNullOrBlank())
+        }
+        val l = c.lookup.lookup("brave")
+        android.util.Log.i("LookupTest", "combined brave -> ${l.translationAr} (${l.translationSource}) ipa=${l.phonetic}")
+    }
+
     @Test fun exportPdfOnDevice() {
         val words = listOf(
             VocabWordEntity(word = "brave", translationAr = "شجاع", definition = "Ready to face danger.", phonetic = "/breɪv/", examples = "She was very brave."),

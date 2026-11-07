@@ -169,7 +169,7 @@ fun ReaderScreen(bookId: String, onBack: () -> Unit) {
                     savedWords = saved,
                     selection = selection,
                     onTap = vm::onTap,
-                    onProgress = { i, o -> vm.saveProgress(i, o, c.paragraphs.size) },
+                    onProgress = { i, o -> vm.saveProgress(i, o, c.paragraphs.size, percent) },
                     onPercent = { percent = it },
                 )
                 is ReaderContent.PdfPages -> PdfPagesReader(
@@ -325,9 +325,9 @@ private fun ReaderSettingsPanel(
         Text(stringResource(R.string.reader_settings), style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(4.dp))
         Text(stringResource(R.string.reader_font_size) + " · ${settings.readerFontSize.toInt()}", style = MaterialTheme.typography.labelLarge)
-        Slider(value = settings.readerFontSize, onValueChange = onFont, valueRange = 12f..34f, steps = 21)
+        Slider(value = settings.readerFontSize, onValueChange = { onFont(Math.round(it).toFloat()) }, valueRange = 12f..34f)
         Text(stringResource(R.string.reader_line_spacing) + " · ${"%.1f".format(settings.readerLineSpacing)}", style = MaterialTheme.typography.labelLarge)
-        Slider(value = settings.readerLineSpacing, onValueChange = onSpacing, valueRange = 1.2f..2.2f, steps = 9)
+        Slider(value = settings.readerLineSpacing, onValueChange = { onSpacing(Math.round(it * 10) / 10f) }, valueRange = 1.2f..2.2f)
         Text(stringResource(R.string.reader_theme), style = MaterialTheme.typography.labelLarge)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf(

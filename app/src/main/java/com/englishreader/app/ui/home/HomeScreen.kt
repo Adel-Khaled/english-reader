@@ -38,6 +38,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -125,7 +126,7 @@ fun HomeScreen(
                             Icon(Icons.Outlined.Replay, null, tint = MaterialTheme.colorScheme.onSecondaryContainer)
                             Spacer(Modifier.width(12.dp))
                             Text(
-                                stringResource(R.string.home_review_due, state.dueCount.coerceAtLeast(0)),
+                                pluralStringResource(R.plurals.home_review_due, state.dueCount, state.dueCount),
                                 modifier = Modifier.weight(1f),
                                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                                 fontWeight = FontWeight.Medium,
@@ -150,7 +151,7 @@ fun HomeScreen(
                                 w.translationAr, style = MaterialTheme.typography.titleLarge.copy(textDirection = TextDirection.Rtl),
                                 color = MaterialTheme.colorScheme.primary, modifier = Modifier.fillMaxWidth(),
                             )
-                            if (w.definition.isNotBlank()) Text(w.definition, style = MaterialTheme.typography.bodyMedium, maxLines = 3, overflow = TextOverflow.Ellipsis)
+                            if (w.definition.isNotBlank()) Text(w.definition, style = MaterialTheme.typography.bodyMedium.copy(textDirection = TextDirection.Ltr), maxLines = 3, overflow = TextOverflow.Ellipsis)
                         }
                     }
                 }

@@ -158,7 +158,7 @@ class BookRepository(
                     pdf.author?.let { author = it }
                     pageCount = pdf.pageCount
                     val letters = pdf.paragraphs.sumOf { p -> p.count { it.isLetter() } }
-                    if (letters < 150) imageOnly = true
+                    if (letters < 20 * pdf.pageCount.coerceAtLeast(1)) imageOnly = true
                     pdf.paragraphs
                 }
             }
@@ -196,8 +196,8 @@ class BookRepository(
         return if (utf8.contains('�')) String(bytes, charset("windows-1252")) else utf8.removePrefix("﻿")
     }
 
-    suspend fun saveProgress(id: String, paragraph: Int, offset: Int, total: Int) {
-        val percent = if (total <= 1) 100 else ((paragraph + 1) * 100 / total).coerceIn(0, 100)
+    suspend fun saveProgress(id: String, paragraph: Int, offset: Int, total: Int, shownPercent: Int? = null) {
+        val percent = shownPercent?.coerceIn(0, 100) ?: if (total <= 1) 100 else ((paragraph + 1) * 100 / total).coerceIn(0, 100)
         dao.updateProgress(id, paragraph, offset, percent, System.currentTimeMillis())
     }
 

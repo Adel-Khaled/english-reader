@@ -72,8 +72,8 @@ class AppFlowTest {
         Espresso.pressBack() // close sheet
         settle(); screenshot("05_reader_underlined")
         Espresso.pressBack() // back to home
-        waitText("My Dictionary")
-        rule.onAllNodesWithText("My Dictionary")[0].performClick()
+        waitText("Dictionary")
+        rule.onAllNodesWithText("Dictionary")[0].performClick()
         waitText("curious")
         settle(); screenshot("06_dictionary")
 
@@ -87,7 +87,7 @@ class AppFlowTest {
         waitText("Library")
         rule.onAllNodesWithText("Library")[0].performClick()
         waitText("Featured free books")
-        settle(); screenshot("08_library")
+        settle(); Thread.sleep(5000); screenshot("08_library")
 
         rule.onAllNodesWithText("Peter Pan")[0].performClick()
         waitText("Download & read")

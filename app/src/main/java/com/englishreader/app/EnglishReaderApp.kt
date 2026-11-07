@@ -16,7 +16,7 @@ class EnglishReaderApp : Application() {
         container = AppContainer(this)
         appScope.launch {
             runCatching { container.books.ensureSampleBook() }
-            runCatching { container.offlineTranslator.refreshState() }
+            runCatching { container.offlineTranslator.downloadOnWifiIfMissing() }
         }
     }
 }

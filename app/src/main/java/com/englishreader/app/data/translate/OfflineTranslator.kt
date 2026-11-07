@@ -45,6 +45,18 @@ class OfflineTranslator {
         }
     }
 
+    /** Downloads the pack silently on Wi-Fi so offline translation works out of the box. */
+    suspend fun downloadOnWifiIfMissing() {
+        refreshState()
+        if (_state.value != OfflinePackState.NOT_INSTALLED) return
+        try {
+            translator.downloadModelIfNeeded(DownloadConditions.Builder().requireWifi().build()).await()
+            _state.value = OfflinePackState.READY
+        } catch (e: Exception) {
+            refreshState()
+        }
+    }
+
     suspend fun remove() {
         runCatching { modelManager.deleteDownloadedModel(arabicModel).await() }
         refreshState()

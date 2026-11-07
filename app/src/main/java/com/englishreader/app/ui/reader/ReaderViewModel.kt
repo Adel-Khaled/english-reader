@@ -59,7 +59,7 @@ class ReaderViewModel(private val c: AppContainer, private val bookId: String) :
                 }
                 // Mark as opened so it shows under "Continue reading".
                 if (book.isImageOnlyPdf) c.books.savePageProgress(book.id, book.lastPage, book.pageCount)
-                else c.books.saveProgress(book.id, book.lastParagraph, book.lastScrollOffset, book.totalParagraphs)
+                else c.books.saveProgress(book.id, book.lastParagraph, book.lastScrollOffset, book.totalParagraphs, book.progressPercent)
             } catch (e: Exception) {
                 content.value = ReaderContent.Error(e.readable())
             }
@@ -111,8 +111,8 @@ class ReaderViewModel(private val c: AppContainer, private val bookId: String) :
         }
     }
 
-    fun saveProgress(paragraph: Int, offset: Int, total: Int) {
-        c.appScopeLaunch { c.books.saveProgress(bookId, paragraph, offset, total) }
+    fun saveProgress(paragraph: Int, offset: Int, total: Int, percent: Int?) {
+        c.appScopeLaunch { c.books.saveProgress(bookId, paragraph, offset, total, percent) }
     }
 
     fun savePage(page: Int, total: Int) {

@@ -67,7 +67,7 @@ private data class TopLevel(val route: String, @StringRes val label: Int, val se
 private val topLevel = listOf(
     TopLevel(Routes.HOME, R.string.nav_home, Icons.Filled.Home, Icons.Outlined.Home),
     TopLevel(Routes.LIBRARY, R.string.nav_library, Icons.AutoMirrored.Filled.MenuBook, Icons.AutoMirrored.Outlined.MenuBook),
-    TopLevel(Routes.DICTIONARY, R.string.nav_dictionary, Icons.Filled.Translate, Icons.Outlined.Translate),
+    TopLevel(Routes.DICTIONARY, R.string.nav_dictionary_short, Icons.Filled.Translate, Icons.Outlined.Translate),
     TopLevel(Routes.PROGRESS, R.string.nav_progress, Icons.Filled.Insights, Icons.Outlined.Insights),
     TopLevel(Routes.SETTINGS, R.string.nav_settings, Icons.Filled.Settings, Icons.Outlined.Settings),
 )

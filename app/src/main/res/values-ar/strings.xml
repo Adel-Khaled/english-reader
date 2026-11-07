@@ -4,6 +4,7 @@
     <string name="nav_home">الرئيسية</string>
     <string name="nav_library">المكتبة</string>
     <string name="nav_dictionary">قاموسي</string>
+    <string name="nav_dictionary_short">قاموسي</string>
     <string name="nav_progress">تقدمي</string>
     <string name="nav_settings">الإعدادات</string>
     <string name="back">رجوع</string>
@@ -25,7 +26,6 @@
     <string name="home_no_books">اختر كتابًا مجانيًا من المكتبة أو استورد ملفك الخاص للبدء.</string>
     <string name="home_browse_library">تصفح المكتبة</string>
     <string name="home_word_of_day">كلمة من قاموسك</string>
-    <string name="home_review_due">%1$d كلمة جاهزة للمراجعة</string>
     <string name="home_review_now">راجع الآن</string>
     <string name="home_stats_saved">محفوظة</string>
     <string name="home_stats_learned">متقنة</string>
@@ -107,7 +107,6 @@
     <string name="dict_delete_title">حذف الكلمة؟</string>
     <string name="dict_delete_msg">ستُحذف \"%1$s\" من قاموسك.</string>
     <string name="dict_added_on">أضيفت %1$s</string>
-    <string name="dict_count">%1$d كلمة</string>
     <string name="edit_word_title">تعديل الكلمة</string>
     <string name="new_word_title">كلمة جديدة</string>
     <string name="field_word">الكلمة الإنجليزية</string>
@@ -161,4 +160,20 @@
     <string name="settings_about">حول التطبيق</string>
     <string name="settings_about_desc">مجاني ومفتوح. الكتب من مشروع غوتنبرغ (ملكية عامة). التعريفات: Free Dictionary API. الترجمة عبر الإنترنت: MyMemory. الترجمة دون اتصال: Google ML Kit. تبقى كل بياناتك على هذا الجهاز.</string>
     <string name="settings_version">الإصدار %1$s</string>
+    <plurals name="home_review_due">
+        <item quantity="zero">لا توجد كلمات للمراجعة</item>
+        <item quantity="one">كلمة واحدة جاهزة للمراجعة</item>
+        <item quantity="two">كلمتان جاهزتان للمراجعة</item>
+        <item quantity="few">%1$d كلمات جاهزة للمراجعة</item>
+        <item quantity="many">%1$d كلمة جاهزة للمراجعة</item>
+        <item quantity="other">%1$d كلمة جاهزة للمراجعة</item>
+    </plurals>
+    <plurals name="dict_count">
+        <item quantity="zero">لا توجد كلمات</item>
+        <item quantity="one">كلمة واحدة</item>
+        <item quantity="two">كلمتان</item>
+        <item quantity="few">%1$d كلمات</item>
+        <item quantity="many">%1$d كلمة</item>
+        <item quantity="other">%1$d كلمة</item>
+    </plurals>
 </resources>

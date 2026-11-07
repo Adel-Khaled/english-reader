@@ -60,6 +60,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
@@ -107,7 +108,7 @@ fun DictionaryScreen(onOpenWord: (Long) -> Unit, onReview: () -> Unit) {
                 title = {
                     Column {
                         Text(stringResource(R.string.nav_dictionary))
-                        if (total > 0) Text(stringResource(R.string.dict_count, total), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        if (total > 0) Text(pluralStringResource(R.plurals.dict_count, total, total), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 },
                 actions = {

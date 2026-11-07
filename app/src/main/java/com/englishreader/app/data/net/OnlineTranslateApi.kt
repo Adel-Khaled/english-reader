@@ -5,6 +5,13 @@ import java.net.URLEncoder
 
 /** MyMemory free translation API (no key needed for light use). */
 object OnlineTranslateApi {
+    /** MyMemory often returns long comma lists of mixed-quality synonyms; keep the first few distinct ones. */
+    fun clean(text: String, maxTerms: Int = 3): String {
+        val parts = text.split(',', '،', ';', '؛').map { it.trim() }.filter { it.isNotEmpty() }
+        if (parts.size <= 1) return text.trim()
+        return parts.distinct().take(maxTerms).joinToString("، ")
+    }
+
     suspend fun translateEnToAr(text: String): String? {
         val q = URLEncoder.encode(text.take(450), "UTF-8")
         val json = JSONObject(Http.getString("https://api.mymemory.translated.net/get?q=$q&langpair=en%7Car", 12_000))
@@ -16,6 +23,6 @@ object OnlineTranslateApi {
         if (translated.equals(text, ignoreCase = true)) return null
         // Must contain at least one Arabic letter to be a useful result.
         if (translated.none { it in '؀'..'ۿ' }) return null
-        return translated
+        return clean(translated)
     }
 }

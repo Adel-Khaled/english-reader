@@ -9,7 +9,10 @@ import java.net.URLEncoder
 object GutendexApi {
     suspend fun search(query: String): List<CatalogBook> {
         val q = URLEncoder.encode(query.trim(), "UTF-8")
-        val json = JSONObject(Http.getString("https://gutendex.com/books/?search=$q&languages=en", 20_000))
+        val url = "https://gutendex.com/books/?search=$q&languages=en"
+        // Gutendex can be slow on cold queries: allow a long timeout and one retry.
+        val body = try { Http.getString(url, 45_000) } catch (e: java.io.IOException) { Http.getString(url, 45_000) }
+        val json = JSONObject(body)
         val results = json.optJSONArray("results") ?: return emptyList()
         val list = ArrayList<CatalogBook>()
         for (i in 0 until results.length()) {

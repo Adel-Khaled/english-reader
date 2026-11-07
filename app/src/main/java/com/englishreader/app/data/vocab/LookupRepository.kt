@@ -42,12 +42,20 @@ class LookupRepository(
             var networkFailed = false
             val dictJob = async { runCatching { DictionaryApi.lookup(key) }.onFailure { networkFailed = true }.getOrNull() }
             val onlineJob = async { runCatching { OnlineTranslateApi.translateEnToAr(key) }.onFailure { networkFailed = true }.getOrNull() }
+            val deviceJob = async { offlineTranslator.translate(key) }
             val dict = dictJob.await()
-            var translation = onlineJob.await()
-            var source = if (translation != null) TranslationSource.ONLINE else TranslationSource.NONE
-            if (translation == null) {
-                translation = offlineTranslator.translate(key)
-                if (translation != null) source = TranslationSource.OFFLINE
+            val online = onlineJob.await()
+            val onDevice = deviceJob.await()
+            // On-device model gives one clean meaning; MyMemory adds synonyms. Show both when they differ.
+            var translation: String? = when {
+                onDevice != null && online != null && !online.contains(onDevice) -> "$onDevice، $online"
+                online != null -> online
+                else -> onDevice
+            }
+            var source = when {
+                online != null -> TranslationSource.ONLINE
+                onDevice != null -> TranslationSource.OFFLINE
+                else -> TranslationSource.NONE
             }
             if (translation == null && cached?.translationAr?.isNotEmpty() == true) {
                 translation = cached.translationAr; source = TranslationSource.CACHE

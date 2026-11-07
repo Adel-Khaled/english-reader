@@ -99,7 +99,7 @@ fun SettingsScreen() {
 
                 SettingsCard(stringResource(R.string.settings_reading)) {
                     Label(stringResource(R.string.reader_font_size) + " · ${settings.readerFontSize.toInt()}")
-                    Slider(value = settings.readerFontSize, onValueChange = { v -> scope.launch { c.settings.setFontSize(v) } }, valueRange = 12f..34f, steps = 21)
+                    Slider(value = settings.readerFontSize, onValueChange = { v -> scope.launch { c.settings.setFontSize(Math.round(v).toFloat()) } }, valueRange = 12f..34f)
                     Label(stringResource(R.string.reader_theme))
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         listOf(ReaderTheme.LIGHT to R.string.reader_theme_light, ReaderTheme.SEPIA to R.string.reader_theme_sepia, ReaderTheme.DARK to R.string.reader_theme_dark).forEach { (t, l) ->
