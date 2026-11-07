@@ -100,7 +100,7 @@ class WordEditViewModel(private val c: AppContainer, private val wordId: Long) :
         }
     }
 
-    fun pronounce() = c.pronouncer.speak(form.value.word, original.value?.audioUrl)
+    fun pronounce() = c.pronouncer.speak(form.value.word)
 
     fun save(onDone: () -> Unit) {
         val f = form.value

@@ -83,7 +83,7 @@ class ReviewViewModel(private val c: AppContainer) : ViewModel() {
         state.value = s.copy(index = s.index + 1, revealed = false, reviewed = s.reviewed + 1)
     }
 
-    fun pronounce(w: VocabWordEntity) = c.pronouncer.speak(w.word, w.audioUrl)
+    fun pronounce(w: VocabWordEntity) = c.pronouncer.speak(w.word)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

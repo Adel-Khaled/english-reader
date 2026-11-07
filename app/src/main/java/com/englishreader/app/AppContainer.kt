@@ -25,11 +25,12 @@ class AppContainer(context: Context) {
     val books = BookRepository(appContext, database.bookDao(), PdfTextExtractor(appContext))
     val vocab = VocabRepository(database.vocabDao(), stats)
     val lookup = LookupRepository(database.lookupCacheDao(), offlineTranslator)
-    val pronouncer: Pronouncer by lazy { Pronouncer(appContext) }
+    /** Created eagerly so the speech engine is warm before the first word is tapped. */
+    val pronouncer: Pronouncer = Pronouncer(appContext)
     /** Books found through online search, kept in memory so the detail screen can show them. */
     val remoteBooks = java.util.concurrent.ConcurrentHashMap<String, com.englishreader.app.data.catalog.CatalogBook>()
     /** Scope for work that must finish even if a screen is closed. */
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     fun appScopeLaunch(block: suspend () -> Unit) { appScope.launch { block() } }
-    // Phase 2: practice repositories will be added here (database.practiceDao()).
+    val practice = com.englishreader.app.practice.PracticeRepository(database.practiceDao(), database.vocabDao(), vocab)
 }

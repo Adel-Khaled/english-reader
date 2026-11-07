@@ -13,6 +13,32 @@ class HttpException(val code: Int, message: String) : IOException(message)
 object Http {
     private const val UA = "EnglishReader/1.0 (Android; educational reading app)"
 
+    /** POST with a body; returns the response text. Errors include the server's message. */
+    suspend fun post(url: String, body: String, contentType: String, timeoutMs: Int = 30_000): String = withContext(Dispatchers.IO) {
+        val conn = (URL(url).openConnection() as HttpURLConnection).apply {
+            requestMethod = "POST"
+            doOutput = true
+            connectTimeout = timeoutMs
+            readTimeout = timeoutMs
+            setRequestProperty("User-Agent", UA)
+            setRequestProperty("Content-Type", contentType)
+        }
+        try {
+            conn.outputStream.use { it.write(body.toByteArray(Charsets.UTF_8)) }
+            val code = conn.responseCode
+            val stream = if (code in 200..299) conn.inputStream else conn.errorStream
+            val text = stream?.use { it.readBytes().toString(Charsets.UTF_8) }.orEmpty()
+            if (code !in 200..299) throw HttpException(code, "HTTP $code ${text.take(300)}")
+            text
+        } finally {
+            conn.disconnect()
+        }
+    }
+
+    suspend fun postForm(url: String, params: Map<String, String>, timeoutMs: Int = 30_000): String =
+        post(url, params.entries.joinToString("&") { (k, v) -> java.net.URLEncoder.encode(k, "UTF-8") + "=" + java.net.URLEncoder.encode(v, "UTF-8") },
+            "application/x-www-form-urlencoded; charset=UTF-8", timeoutMs)
+
     private fun open(url: String, timeoutMs: Int): HttpURLConnection {
         var current = url
         repeat(6) {

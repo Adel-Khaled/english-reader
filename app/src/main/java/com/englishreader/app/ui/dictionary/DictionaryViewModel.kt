@@ -60,7 +60,7 @@ class DictionaryViewModel(private val c: AppContainer) : ViewModel() {
     fun setFilter(f: LearnFilter) { query.value = query.value.copy(filter = f) }
     fun toggleLearned(w: VocabWordEntity) { viewModelScope.launch { c.vocab.setLearned(w.id, !w.isLearned) } }
     fun delete(w: VocabWordEntity) { viewModelScope.launch { c.vocab.delete(w.id) } }
-    fun pronounce(w: VocabWordEntity) = c.pronouncer.speak(w.word, w.audioUrl)
+    fun pronounce(w: VocabWordEntity) = c.pronouncer.speak(w.word)
 
     /** Exports the words currently shown (respecting search/filter) — or all if none shown. */
     fun export(uri: Uri, format: ExportFormat) {

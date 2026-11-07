@@ -7,6 +7,10 @@ import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
@@ -99,16 +103,62 @@ class AppFlowTest {
         waitText("Words saved")
         settle(); screenshot("10_progress")
 
-        rule.onAllNodesWithText("Settings")[0].performClick()
-        waitText("Offline Arabic translation pack")
+        rule.onAllNodesWithContentDescription("Settings")[0].performClick()
+        waitText("Pronunciation voice")
         settle(); screenshot("11_settings")
+        rule.onNodeWithText("Pronunciation voice").performScrollTo()
+        settle(); screenshot("11b_settings_voice")
 
-        rule.onAllNodesWithText("Dark")[0].performClick()
+        rule.onAllNodesWithText("Dark")[0].performScrollTo().performClick()
         settle()
+        pressBack()
         rule.onAllNodesWithText("Home")[0].performClick()
         waitText("Read, learn, and grow your English")
         settle(); screenshot("12_home_dark")
         runBlocking { container().settings.setAppTheme(com.englishreader.app.data.prefs.AppTheme.SYSTEM) }
+    }
+
+    @Test fun b2_practiceFlow() {
+        waitText("Practice")
+        rule.onAllNodesWithText("Practice")[0].performClick()
+        waitText("Story & questions")
+        settle(); screenshot("15_practice_hub")
+
+        rule.onNodeWithText("Story & questions").performClick()
+        waitText("Answer questions", timeout = 60_000)
+        settle(); screenshot("16_story")
+        rule.onNodeWithText("Answer questions").performClick()
+        waitText("Question 1 of", substring = true)
+        settle(); screenshot("17_question")
+        val d = androidx.test.uiautomator.UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+        d.click(d.displayWidth / 2, (d.displayHeight * 0.52).toInt())
+        rule.waitUntil(10_000) {
+            rule.onAllNodesWithText("Next").fetchSemanticsNodes().isNotEmpty() || rule.onAllNodesWithText("Finish").fetchSemanticsNodes().isNotEmpty()
+        }
+        settle(); screenshot("18_answer_feedback")
+        pressBack()
+
+        waitText("Writing")
+        rule.onNodeWithText("Writing").performClick()
+        waitText("Write")
+        rule.onNodeWithText("Write").performClick()
+        waitText("Your sentence")
+        rule.onNode(hasSetTextAction()).performTextInput("she are very curious about the old lighthouse")
+        rule.onNodeWithText("Check").performClick()
+        rule.waitUntil(40_000) {
+            rule.onAllNodesWithText("Corrections").fetchSemanticsNodes().isNotEmpty() ||
+                rule.onAllNodesWithText("Great sentence! No mistakes found.").fetchSemanticsNodes().isNotEmpty()
+        }
+        Thread.sleep(500)
+        runCatching { androidx.test.espresso.Espresso.closeSoftKeyboard() }
+        settle(); screenshot("19_writing_feedback")
+        pressBack()
+
+        waitText("Speaking")
+        rule.onNodeWithText("Speaking").performClick()
+        waitText("Say this:")
+        settle(); screenshot("20_speaking")
+        pressBack()
     }
 
     @Test fun c_arabicInterface() {

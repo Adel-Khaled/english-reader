@@ -9,11 +9,11 @@ import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Insights
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Insights
-import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.School
 import androidx.compose.material.icons.outlined.Translate
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -42,6 +42,11 @@ import com.englishreader.app.ui.home.HomeScreen
 import com.englishreader.app.ui.library.BookDetailScreen
 import com.englishreader.app.ui.library.LibraryScreen
 import com.englishreader.app.ui.progress.ProgressScreen
+import com.englishreader.app.ui.practice.FillBlanksScreen
+import com.englishreader.app.ui.practice.PracticeHubScreen
+import com.englishreader.app.ui.practice.ReadingPracticeScreen
+import com.englishreader.app.ui.practice.SpeakingPracticeScreen
+import com.englishreader.app.ui.practice.WritingPracticeScreen
 import com.englishreader.app.ui.reader.ReaderScreen
 import com.englishreader.app.ui.settings.SettingsScreen
 
@@ -55,11 +60,13 @@ object Routes {
     const val READER = "reader/{bookId}"
     const val WORD = "word/{wordId}"
     const val REVIEW = "review"
-    // Phase 2: const val PRACTICE = "practice" …
+    const val PRACTICE = "practice"
+    const val PRACTICE_ACTIVITY = "practice/{kind}?ids={ids}"
 
     fun book(id: String) = "book/$id"
     fun reader(id: String) = "reader/$id"
     fun word(id: Long) = "word/$id"
+    fun practice(kind: String, ids: List<Long>) = "practice/$kind?ids=" + ids.joinToString(",")
 }
 
 private data class TopLevel(val route: String, @StringRes val label: Int, val selected: ImageVector, val unselected: ImageVector)
@@ -68,8 +75,8 @@ private val topLevel = listOf(
     TopLevel(Routes.HOME, R.string.nav_home, Icons.Filled.Home, Icons.Outlined.Home),
     TopLevel(Routes.LIBRARY, R.string.nav_library, Icons.AutoMirrored.Filled.MenuBook, Icons.AutoMirrored.Outlined.MenuBook),
     TopLevel(Routes.DICTIONARY, R.string.nav_dictionary_short, Icons.Filled.Translate, Icons.Outlined.Translate),
+    TopLevel(Routes.PRACTICE, R.string.nav_practice, Icons.Filled.School, Icons.Outlined.School),
     TopLevel(Routes.PROGRESS, R.string.nav_progress, Icons.Filled.Insights, Icons.Outlined.Insights),
-    TopLevel(Routes.SETTINGS, R.string.nav_settings, Icons.Filled.Settings, Icons.Outlined.Settings),
 )
 
 fun NavHostController.navigateTopLevel(route: String) {
@@ -117,6 +124,8 @@ fun AppNavHost() {
                     onBrowseLibrary = { nav.navigateTopLevel(Routes.LIBRARY) },
                     onReview = { nav.navigate(Routes.REVIEW) },
                     onOpenWord = { nav.navigate(Routes.word(it)) },
+                    onPractice = { nav.navigateTopLevel(Routes.PRACTICE) },
+                    onSettings = { nav.navigate(Routes.SETTINGS) },
                 )
             }
             composable(Routes.LIBRARY) {
@@ -131,8 +140,32 @@ fun AppNavHost() {
                     onReview = { nav.navigate(Routes.REVIEW) },
                 )
             }
-            composable(Routes.PROGRESS) { ProgressScreen(onOpenBook = { nav.navigate(Routes.reader(it)) }) }
-            composable(Routes.SETTINGS) { SettingsScreen() }
+            composable(Routes.PROGRESS) { ProgressScreen(onOpenBook = { nav.navigate(Routes.reader(it)) }, onSettings = { nav.navigate(Routes.SETTINGS) }) }
+            composable(Routes.SETTINGS) { SettingsScreen(onBack = { nav.popBackStack() }) }
+            composable(Routes.PRACTICE) {
+                PracticeHubScreen(
+                    onOpen = { kind, ids -> nav.navigate(Routes.practice(kind, ids)) },
+                    onSettings = { nav.navigate(Routes.SETTINGS) },
+                    onLibrary = { nav.navigateTopLevel(Routes.LIBRARY) },
+                )
+            }
+            composable(
+                Routes.PRACTICE_ACTIVITY,
+                arguments = listOf(
+                    navArgument("kind") { type = NavType.StringType },
+                    navArgument("ids") { type = NavType.StringType; defaultValue = "" },
+                ),
+            ) { entry ->
+                val kind = entry.arguments?.getString("kind").orEmpty()
+                val ids = entry.arguments?.getString("ids").orEmpty().split(',').mapNotNull { it.trim().toLongOrNull() }
+                val back: () -> Unit = { nav.popBackStack() }
+                when (kind) {
+                    "reading" -> ReadingPracticeScreen(ids, back)
+                    "blanks" -> FillBlanksScreen(ids, back)
+                    "writing" -> WritingPracticeScreen(ids, back)
+                    else -> SpeakingPracticeScreen(ids, back)
+                }
+            }
             composable(Routes.BOOK, arguments = listOf(navArgument("bookId") { type = NavType.StringType })) { entry ->
                 val id = entry.arguments?.getString("bookId").orEmpty()
                 BookDetailScreen(

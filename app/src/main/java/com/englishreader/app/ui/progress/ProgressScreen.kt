@@ -19,6 +19,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.RocketLaunch
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -68,12 +69,13 @@ data class ProgressState(
     val streak: Int = 0,
     val last7: List<DayBar> = emptyList(),
     val reading: List<BookEntity> = emptyList(),
+    val practice: com.englishreader.app.practice.PracticeStats = com.englishreader.app.practice.PracticeStats(0, 0, 0),
 )
 
 class ProgressViewModel(c: AppContainer) : ViewModel() {
     val state: StateFlow<ProgressState> = combine(
-        c.stats.observeAll(), c.vocab.observeCount(), c.vocab.observeLearnedCount(), c.books.observeStarted(),
-    ) { stats, saved, learned, started ->
+        c.stats.observeAll(), c.vocab.observeCount(), c.vocab.observeLearnedCount(), c.books.observeStarted(), c.practice.observeSessions(),
+    ) { stats, saved, learned, started, sessions ->
         val byDay = stats.associateBy { it.day }
         val parse = SimpleDateFormat("yyyy-MM-dd", Locale.US)
         val label = SimpleDateFormat("EEE", Locale.getDefault())
@@ -90,19 +92,25 @@ class ProgressViewModel(c: AppContainer) : ViewModel() {
             streak = StatsRepository.streak(stats),
             last7 = last7,
             reading = started.filter { it.progressPercent < 100 }.take(5),
+            practice = com.englishreader.app.practice.PracticeRepository.stats(sessions),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ProgressState())
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProgressScreen(onOpenBook: (String) -> Unit) {
+fun ProgressScreen(onOpenBook: (String) -> Unit, onSettings: () -> Unit = {}) {
     val vm = appViewModel { ProgressViewModel(it) }
     val s by vm.state.collectAsStateWithLifecycle()
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.progress_title)) }) },
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.progress_title)) },
+                actions = { androidx.compose.material3.IconButton(onClick = onSettings) { Icon(androidx.compose.material.icons.Icons.Outlined.Settings, stringResource(R.string.nav_settings)) } },
+            )
+        },
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.TopCenter) {
             Column(
@@ -152,12 +160,11 @@ fun ProgressScreen(onOpenBook: (String) -> Unit) {
                     }
                 }
 
-                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer), modifier = Modifier.fillMaxWidth()) {
-                    Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Outlined.RocketLaunch, null)
-                        Spacer(Modifier.width(12.dp))
-                        Text(stringResource(R.string.progress_practice_soon), style = MaterialTheme.typography.bodyMedium)
-                    }
+                SectionTitle(stringResource(R.string.progress_practice))
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Tile(s.practice.sessions.toString(), stringResource(R.string.progress_sessions), Modifier.weight(1f))
+                    Tile(s.practice.questions.toString(), stringResource(R.string.progress_answers), Modifier.weight(1f))
+                    Tile("${s.practice.accuracy}%", stringResource(R.string.progress_accuracy), Modifier.weight(1f))
                 }
             }
         }

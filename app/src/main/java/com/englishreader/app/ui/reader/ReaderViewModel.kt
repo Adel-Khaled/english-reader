@@ -72,6 +72,7 @@ class ReaderViewModel(private val c: AppContainer, private val bookId: String) :
         val word = TextProcessing.normalizeWord(raw)
         if (word.isEmpty() || word.none { it.isLetter() }) return
         selection.value = WordSelection(paragraphIndex, range, word, TextProcessing.sentenceAround(text, range))
+        if (settings.value.autoSpeak) c.pronouncer.speak(raw.trim('\'', '’', '-'))
         sentenceTranslation.value = null
         lookup.value = LookupState.Loading
         lookupJob?.cancel()
@@ -100,7 +101,7 @@ class ReaderViewModel(private val c: AppContainer, private val bookId: String) :
         viewModelScope.launch { c.vocab.saveFromLookup(l, book?.id, book?.title, sel.sentence) }
     }
 
-    fun pronounce(word: String, audioUrl: String?) = c.pronouncer.speak(word, audioUrl)
+    fun pronounce(word: String, @Suppress("UNUSED_PARAMETER") audioUrl: String?) = c.pronouncer.speak(word)
 
     fun translateSentence() {
         val sel = selection.value ?: return

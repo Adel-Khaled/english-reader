@@ -22,6 +22,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.Replay
+import androidx.compose.material.icons.outlined.School
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -97,13 +100,20 @@ fun HomeScreen(
     onBrowseLibrary: () -> Unit,
     onReview: () -> Unit,
     onOpenWord: (Long) -> Unit,
+    onPractice: () -> Unit = {},
+    onSettings: () -> Unit = {},
 ) {
     val vm = appViewModel { HomeViewModel(it) }
     val state by vm.state.collectAsStateWithLifecycle()
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.app_name), fontFamily = FontFamily.Serif, fontWeight = FontWeight.SemiBold) }) },
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.app_name), fontFamily = FontFamily.Serif, fontWeight = FontWeight.SemiBold) },
+                actions = { IconButton(onClick = onSettings) { Icon(Icons.Outlined.Settings, stringResource(R.string.nav_settings)) } },
+            )
+        },
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.TopCenter) {
             Column(
@@ -132,6 +142,19 @@ fun HomeScreen(
                                 fontWeight = FontWeight.Medium,
                             )
                             FilledTonalButton(onClick = onReview) { Text(stringResource(R.string.home_review_now)) }
+                        }
+                    }
+                }
+
+                if (state.savedCount > 0) {
+                    Card(Modifier.fillMaxWidth().clickable(onClick = onPractice), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)) {
+                        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Outlined.School, null, tint = MaterialTheme.colorScheme.onTertiaryContainer, modifier = Modifier.size(32.dp))
+                            Spacer(Modifier.width(14.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(stringResource(R.string.home_practice_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onTertiaryContainer)
+                                Text(stringResource(R.string.home_practice_desc), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onTertiaryContainer)
+                            }
                         }
                     }
                 }

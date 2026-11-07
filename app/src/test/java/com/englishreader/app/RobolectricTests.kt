@@ -138,6 +138,45 @@ class RobolectricTests {
         assertFalse(DictionaryFilter.apply(words, DictionaryQuery(filter = LearnFilter.LEARNING)).any { it.isLearned })
     }
 
+    @Test fun parsesLanguageToolAndAppliesFixes() {
+        val json = """{"matches":[{"message":"The verb 'go' does not agree with the subject 'she'.","offset":4,"length":2,
+            "replacements":[{"value":"goes"},{"value":"went"}],"rule":{"category":{"name":"Grammar"}}}]}"""
+        val issues = com.englishreader.app.practice.LanguageToolApi.parse(json)
+        assertEquals(1, issues.size)
+        assertEquals("Grammar", issues[0].category)
+        assertEquals("She goes to school.", com.englishreader.app.practice.LanguageToolApi.applyFixes("She go to school.", issues))
+    }
+
+    @Test fun parsesGeminiStory() {
+        val inner = """{"title":"T","paragraphs":["A curious cat."],"questions":[
+            {"type":"vocabulary","question":"Q?","options":["a","b","c","d"],"answer_index":2,"explanation":"e"},
+            {"type":"x","question":"bad","options":["a"],"answer_index":0}]}"""
+        val resp = org.json.JSONObject().put("candidates", org.json.JSONArray().put(org.json.JSONObject().put("content",
+            org.json.JSONObject().put("parts", org.json.JSONArray().put(org.json.JSONObject().put("text", "```json\n$inner\n```")))))).toString()
+        val text = com.englishreader.app.practice.GeminiClient.extractText(resp)
+        val story = com.englishreader.app.practice.GeminiClient.parseStory(org.json.JSONObject(text), listOf("curious"))
+        assertEquals("T", story.title)
+        assertEquals(1, story.questions.size)
+        assertEquals(com.englishreader.app.practice.QuestionType.VOCABULARY, story.questions[0].type)
+        assertEquals(2, story.questions[0].correctIndex)
+    }
+
+    @Test fun detectsVoiceGender() {
+        val g = com.englishreader.app.util.Pronouncer.Companion
+        assertEquals(com.englishreader.app.util.VoiceGender.FEMALE, g.genderOf("en-us-x-sfg-local", emptySet()))
+        assertEquals(com.englishreader.app.util.VoiceGender.MALE, g.genderOf("en-us-x-iom-local", emptySet()))
+        assertEquals(com.englishreader.app.util.VoiceGender.FEMALE, g.genderOf("en-US-SMTf00", emptySet()))
+        assertEquals(com.englishreader.app.util.VoiceGender.FEMALE, g.genderOf("English Female", emptySet()))
+        assertEquals(com.englishreader.app.util.VoiceGender.MALE, g.genderOf("english_male_1", emptySet()))
+        val best = g.bestVoice(listOf(
+            com.englishreader.app.util.VoiceOption("en-us-x-iom-local", java.util.Locale.US, com.englishreader.app.util.VoiceGender.MALE, 400, false),
+            com.englishreader.app.util.VoiceOption("en-us-x-sfg-network", java.util.Locale.US, com.englishreader.app.util.VoiceGender.FEMALE, 500, true),
+            com.englishreader.app.util.VoiceOption("en-gb-x-gba-local", java.util.Locale.UK, com.englishreader.app.util.VoiceGender.FEMALE, 400, false),
+            com.englishreader.app.util.VoiceOption("en-us-x-tpf-local", java.util.Locale.US, com.englishreader.app.util.VoiceGender.FEMALE, 400, false),
+        ))
+        assertEquals("en-us-x-tpf-local", best!!.name)
+    }
+
     @Test fun streakCountsConsecutiveDays() {
         val stats = listOf(
             DailyStatEntity(StatsRepository.dayOffset(0), secondsRead = 600),

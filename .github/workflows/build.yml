@@ -40,21 +40,25 @@ jobs:
       - name: Build release APK
         run: ./gradlew --no-daemon assembleRelease
       - name: Rename APK
-        run: cp app/build/outputs/apk/release/app-release.apk EnglishReader-v1.0.0.apk
+        run: |
+          V=$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts)
+          echo "APP_VERSION=$V" >> $GITHUB_ENV
+          cp app/build/outputs/apk/release/app-release.apk EnglishReader-v$V.apk
       - uses: actions/upload-artifact@v4
         with:
           name: EnglishReader-apk
-          path: EnglishReader-v1.0.0.apk
+          path: EnglishReader-v*.apk
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: build-${{ github.run_number }}
-          name: English Reader v1.0.0 (build ${{ github.run_number }})
+          name: English Reader v${{ env.APP_VERSION }} (build ${{ github.run_number }})
           body: |
-            Download **EnglishReader-v1.0.0.apk** below and open it on your Android phone (Android 8.0+).
+            Download **EnglishReader-v${{ env.APP_VERSION }}.apk** below and open it on your Android phone (Android 8.0+).
+            Installing it over an older version keeps all your books, words and progress.
             Commit ${{ github.sha }}
           files: |
-            EnglishReader-v1.0.0.apk
+            EnglishReader-v*.apk
             unit-tests.txt
 
   device-test:
@@ -86,7 +90,7 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: |
             ./gradlew --no-daemon connectedDebugAndroidTest > device-test-log.txt 2>&1 || echo "DEVICE TESTS FAILED" >> device-test-log.txt
-            adb logcat -d -s LookupTest:I AndroidRuntime:E TestRunner:* > logcat.txt || true
+            adb logcat -d -s LookupTest:I Pronouncer:I VoiceTest:I AndroidRuntime:E TestRunner:* > logcat.txt || true
             mkdir -p screens && adb pull /data/local/tmp/screens/. screens/ || true
       - name: Summarise device tests
         if: always()
