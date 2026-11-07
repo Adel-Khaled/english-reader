@@ -71,9 +71,11 @@ data class VocabWordEntity(
     val easeFactor: Float = 2.5f,
     /** 0..5 mastery used to pick words for generated exercises. */
     val masteryLevel: Int = 0,
-) {
-    val exampleList: List<String> get() = examples.split('\n').map { it.trim() }.filter { it.isNotEmpty() }
-}
+)
+
+/** Example sentences as a list (kept outside the entity so Room ignores it). */
+val VocabWordEntity.exampleList: List<String>
+    get() = examples.split('\n').map { it.trim() }.filter { it.isNotEmpty() }
 
 /** Cache of every lookup so words work offline once seen. */
 @Entity(tableName = "lookup_cache")

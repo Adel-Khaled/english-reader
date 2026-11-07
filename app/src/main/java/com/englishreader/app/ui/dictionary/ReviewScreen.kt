@@ -47,6 +47,7 @@ import androidx.lifecycle.viewModelScope
 import com.englishreader.app.AppContainer
 import com.englishreader.app.R
 import com.englishreader.app.data.db.VocabWordEntity
+import com.englishreader.app.data.db.exampleList
 import com.englishreader.app.ui.components.EmptyState
 import com.englishreader.app.ui.components.appViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -9,6 +9,7 @@ import android.text.StaticLayout
 import android.text.TextDirectionHeuristics
 import android.text.TextPaint
 import com.englishreader.app.data.db.VocabWordEntity
+import com.englishreader.app.data.db.exampleList
 import java.io.OutputStream
 import java.text.SimpleDateFormat
 import java.util.Date

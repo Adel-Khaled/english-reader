@@ -10,6 +10,7 @@ import com.englishreader.app.data.db.BookFormat
 import com.englishreader.app.data.db.BookSource
 import com.englishreader.app.data.db.DailyStatEntity
 import com.englishreader.app.data.db.VocabWordEntity
+import com.englishreader.app.data.db.exampleList
 import com.englishreader.app.data.export.VocabExporter
 import com.englishreader.app.data.net.DictionaryApi
 import com.englishreader.app.data.vocab.StatsRepository
