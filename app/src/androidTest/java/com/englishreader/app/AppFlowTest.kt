@@ -13,7 +13,6 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.click
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.core.os.LocaleListCompat
-import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.runBlocking
@@ -37,6 +36,7 @@ class AppFlowTest {
     private fun settle() { rule.waitForIdle(); Thread.sleep(900) }
 
     @Test fun a_readTapTranslateAndSave() {
+        dismissSystemDialogs()
         val title = "The Lighthouse Keeper's Notebook"
         waitText(title)
         settle(); screenshot("01_home")
@@ -69,9 +69,9 @@ class AppFlowTest {
         runBlocking { assertNotNull(container().vocab.findByWord("curious")) }
         settle(); screenshot("04_word_saved")
 
-        Espresso.pressBack() // close sheet
+        pressBack() // close sheet
         settle(); screenshot("05_reader_underlined")
-        Espresso.pressBack() // back to home
+        pressBack() // back to home
         waitText("Dictionary")
         rule.onAllNodesWithText("Dictionary")[0].performClick()
         waitText("curious")
@@ -80,7 +80,7 @@ class AppFlowTest {
         rule.onAllNodesWithText("curious")[0].performClick()
         waitText("Personal notes")
         settle(); screenshot("07_word_edit")
-        Espresso.pressBack()
+        pressBack()
     }
 
     @Test fun b_libraryProgressSettings() {
@@ -92,7 +92,7 @@ class AppFlowTest {
         rule.onAllNodesWithText("Peter Pan")[0].performClick()
         waitText("Download & read")
         settle(); screenshot("09_book_detail")
-        Espresso.pressBack()
+        pressBack()
 
         waitText("Progress")
         rule.onAllNodesWithText("Progress")[0].performClick()

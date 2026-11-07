@@ -21,6 +21,7 @@ androidxJunit = "1.2.1"
 testRunner = "1.6.2"
 testRules = "1.6.1"
 espresso = "3.6.1"
+uiautomator = "2.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -55,6 +56,7 @@ androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "testRunner" }
 androidx-test-rules = { group = "androidx.test", name = "rules", version.ref = "testRules" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
+androidx-uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

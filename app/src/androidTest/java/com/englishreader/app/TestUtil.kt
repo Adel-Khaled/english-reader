@@ -17,3 +17,19 @@ fun screenshot(name: String) {
 
 fun container(): AppContainer =
     (InstrumentationRegistry.getInstrumentation().targetContext.applicationContext as EnglishReaderApp).container
+
+private val device get() = androidx.test.uiautomator.UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+
+/** System back press that does not depend on window focus (robust on slow CI emulators). */
+fun pressBack() {
+    dismissSystemDialogs()
+    device.pressBack()
+    Thread.sleep(700)
+}
+
+/** Closes "System UI isn't responding" style dialogs that slow emulators sometimes show. */
+fun dismissSystemDialogs() {
+    for (label in listOf("Wait", "Close app", "OK")) {
+        device.findObject(androidx.test.uiautomator.By.text(label))?.let { if (label == "Wait") it.click() }
+    }
+}
