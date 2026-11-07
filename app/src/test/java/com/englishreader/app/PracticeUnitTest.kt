@@ -65,6 +65,14 @@ class PracticeUnitTest {
         }
     }
 
+    @Test fun mergesDuplicateGrammarIssues() {
+        val lt = com.englishreader.app.practice.GrammarIssue("This sentence does not start with an uppercase letter.", 0, 3, listOf("She"), "Capitalization")
+        val basic = com.englishreader.app.practice.GrammarIssue("Start the sentence with a capital letter.", 0, 1, listOf("S"), "Capitalization")
+        assertTrue(com.englishreader.app.practice.PracticeRepository.overlaps(lt, basic, 20))
+        val other = com.englishreader.app.practice.GrammarIssue("Use third-person verb.", 4, 3, listOf("is"), "Grammar")
+        assertFalse(com.englishreader.app.practice.PracticeRepository.overlaps(other, basic, 20))
+    }
+
     @Test fun buildsBlanksOnlyFromRealExamples() {
         val blanks = LocalPracticeGenerator(Random(1)).blanks(words, words)
         assertEquals(setOf("curious", "fragile", "struggle"), blanks.map { it.word }.toSet())

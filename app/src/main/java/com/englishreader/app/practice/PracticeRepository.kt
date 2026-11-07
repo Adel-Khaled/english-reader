@@ -59,7 +59,7 @@ class PracticeRepository(
         var online = false
         val ltIssues = try { LanguageToolApi.check(text).also { online = true } } catch (e: Exception) { emptyList() }
         // Merge, avoiding duplicates of the same position.
-        val issues = (ltIssues + basic.filter { b -> ltIssues.none { it.offset == b.offset && it.length == b.length } })
+        val issues = (ltIssues + basic.filter { b -> ltIssues.none { lt -> overlaps(lt, b, text.length) } })
             .sortedBy { it.offset }
         var corrected: String? = LanguageToolApi.applyFixes(text, issues.filter { it.length > 0 || it.offset == text.length })
             .let { if (it.isNotEmpty() && it.last() !in ".!?") "$it." else it }
@@ -101,6 +101,13 @@ class PracticeRepository(
     }
 
     companion object {
+        /** True when an online issue already covers the same problem as a basic check. */
+        fun overlaps(lt: GrammarIssue, basic: GrammarIssue, textLength: Int): Boolean = when (basic.category) {
+            "Capitalization" -> lt.offset == 0 || lt.category.contains("Capital", true) || lt.message.contains("uppercase", true)
+            "Punctuation" -> lt.offset + lt.length >= textLength - 1 && (lt.category.contains("Punctuation", true) || lt.message.contains("punctuation", true))
+            else -> lt.offset == basic.offset && lt.length == basic.length
+        }
+
         fun stats(sessions: List<PracticeSessionEntity>): PracticeStats {
             val done = sessions.filter { it.finishedAt > 0 }
             return PracticeStats(done.size, done.sumOf { it.totalQuestions }, done.sumOf { it.correctAnswers })

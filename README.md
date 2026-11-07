@@ -4,8 +4,7 @@ A free Android app for Arabic speakers who want to improve their English by read
 Tap any word while reading to see its Arabic translation, English definition, pronunciation and
 examples, then save it to **My Dictionary**.
 
-This is **Phase 1** (reading + personal dictionary). The code and database are already prepared
-for **Phase 2** (personalised practice), which will be added as an update.
+**Version 1.1** includes Phase 1 (reading + personal dictionary) and Phase 2 (personalised practice).
 
 ---
 
@@ -60,6 +59,21 @@ When a source is unavailable, the app says so and still lets you save the word.
 - Export the dictionary (or the filtered list) to **PDF, CSV or TXT** and save it anywhere with the system file picker.
 - The PDF is laid out with Android's text engine, so Arabic letters are joined and shown right-to-left. The CSV is UTF-8 with a BOM, so Arabic shows correctly in Excel.
 
+## Features (Phase 2 — Practice)
+
+Open the **Practice** tab. The app picks the words you need most (not yet learned, low mastery, due for review); you can choose other words and your level.
+
+- **Story & questions** — a short story built from your words (highlighted), read aloud on request, followed by comprehension, vocabulary and fill-in-the-blank questions. On-device generation uses your real example sentences, so the English is always natural. With an optional free Google Gemini key (Settings → AI practice) stories and questions are written by AI.
+- **Fill in the blanks** — choose the missing word in real sentences.
+- **Writing** — *Complete*: type the missing word (inflected forms like "struggling" are accepted). *Write*: write your own sentence; the app checks that you used the word, finds grammar and spelling mistakes with the free LanguageTool service, explains each one, suggests a corrected sentence and shows natural example sentences (or AI explanations in English and Arabic when a Gemini key is set).
+- **Speaking** — listen (normal or slow), tap the microphone and speak; Android speech recognition turns your voice into text and every word is coloured green (clear), orange (close) or red (not recognised), with a score and tips.
+- **Tracking** — every answer is stored (`practice_sessions`, `exercise_results`) and updates each word's spaced-repetition schedule and mastery level; Progress shows sessions, answers and accuracy.
+
+### Pronunciation (fixed in 1.1)
+- The speech engine starts with the app, so the first tapped word is spoken immediately (it was silently dropped in 1.0).
+- An **offline female** English voice is chosen automatically; slow online audio files are no longer used. Measured start time on the test emulator: under 50 ms.
+- Settings → Pronunciation voice: choose any installed voice, speaking speed, and "Speak the word when I tap it". If the phone has no English voice the app offers to install it.
+
 ### Also included
 - Bottom navigation: **Home, Library, My Dictionary, Progress, Settings**.
 - **Progress**: words saved/learned, reading minutes, day streak, a 7-day chart, books in progress.
@@ -85,9 +99,10 @@ app/src/main/java/com/englishreader/app/
 │   ├── books/                 BookRepository, TextProcessing, EPUB parser, PDF extractor
 │   ├── vocab/                 LookupRepository, VocabRepository, StatsRepository
 │   └── export/                PDF / CSV / TXT exporter
-├── practice/                  Phase 2 contracts (interfaces only, feature flag off)
+├── practice/                  Phase 2: story/question generator, word forms, speech comparer,
+│                              LanguageTool + optional Gemini clients, PracticeRepository
 ├── ui/                        Compose screens, one package per feature, each with its ViewModel
-│   ├── home/  library/  reader/  dictionary/  progress/  settings/
+│   ├── home/  library/  reader/  dictionary/  practice/  progress/  settings/
 │   ├── navigation/            NavHost + bottom bar
 │   ├── components/            Shared UI (covers, badges, empty states)
 │   └── theme/                 Material 3 colours, typography, reader themes
@@ -114,10 +129,8 @@ app/src/main/java/com/englishreader/app/
 
 The schema is exported to `app/schemas/` so future versions can add proper migrations without losing data.
 
-### How Phase 2 plugs in
-- `practice/PracticeContracts.kt` defines `ContentGenerator`, `ExerciseGenerator`, `WritingEvaluator`, `SpeechEvaluator` and the `Exercise` types (fill-in-the-blank, multiple choice, free writing, speaking).
-- The three Phase 2 tables already exist, and every vocabulary row already tracks mastery and review history, so word selection and progress tracking can start immediately.
-- Add a `ui/practice/` package, a `Routes.PRACTICE` entry and repositories in `AppContainer`, then turn on `PracticeFeature.ENABLED`. No existing screen has to be rewritten.
+### Updating without losing data
+Phase 2 used the tables created in version 1.0, so the database is still version 1 and no migration was needed. Every release is signed with the same key and keeps the application id `com.englishreader.app`, so installing a new APK over the old one keeps all books, words and progress.
 
 ---
 
@@ -161,9 +174,9 @@ Requires Android 8.0 or newer. To update later, install the new APK over the old
 ---
 
 ## Tests
-Every push runs **18 unit tests** and **11 on-device tests** on an Android 12 emulator in GitHub Actions. Results (`unit-tests.txt`, `device-tests.txt`) and screenshots of every screen (`screenshots.zip`) are attached to each release.
+Every push runs **26 unit tests** and **14 on-device tests** on an Android 12 emulator in GitHub Actions. Results (`unit-tests.txt`, `device-tests.txt`) and screenshots of every screen (`screenshots.zip`) are attached to each release.
 
-On-device tests (`app/src/androidTest/`) cover the real app end to end: open the sample book → tap the word "curious" → Arabic translation, definition and IPA appear → save → word is in My Dictionary and underlined in the text; Library, book details, Progress, Settings, dark mode and the Arabic (RTL) interface; importing TXT, EPUB and PDF files; downloading a Gutenberg book; online search; live dictionary lookup and caching; downloading the offline Arabic pack and translating offline; exporting a PDF with Arabic.
+On-device tests (`app/src/androidTest/`) cover the real app end to end: open the sample book → tap the word "curious" → Arabic translation, definition and IPA appear → save → word is in My Dictionary and underlined in the text; Library, book details, Progress, Settings, dark mode and the Arabic (RTL) interface; importing TXT, EPUB and PDF files; downloading a Gutenberg book; online search; live dictionary lookup and caching; downloading the offline Arabic pack and translating offline; exporting a PDF with Arabic; the voice is female/offline and starts speaking in under 3 s on three consecutive taps; story generation and online grammar checking; and a UI walk through Practice (story, question feedback, writing corrections, speaking).
 
 `app/src/test/` contains JVM and Robolectric tests for:
 - Gutenberg cleanup, paragraph building, long-paragraph splitting, PDF paragraph rebuilding, HTML → text
