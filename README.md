@@ -146,7 +146,10 @@ The release APK is signed with the key in `keystore/release.jks` (password `engl
 ---
 
 ## Installing the APK on an Android phone
-1. Copy `EnglishReader-v1.0.0.apk` to the phone (download it, or send it via USB, Google Drive, Telegram, etc.).
+The latest tested APK is always on the repository's **Releases** page:
+https://github.com/Adel-Khaled/english-reader/releases — open it on your phone and tap **EnglishReader-v1.0.0.apk**.
+
+1. Or copy `EnglishReader-v1.0.0.apk` to the phone (download it, or send it via USB, Google Drive, Telegram, etc.).
 2. Open the file from the **Files / Downloads** app.
 3. If Android asks, allow **Install unknown apps** for that app (Settings → Apps → *Files* → Install unknown apps → Allow).
 4. Tap **Install**, then **Open**.
@@ -158,6 +161,10 @@ Requires Android 8.0 or newer. To update later, install the new APK over the old
 ---
 
 ## Tests
+Every push runs **18 unit tests** and **11 on-device tests** on an Android 12 emulator in GitHub Actions. Results (`unit-tests.txt`, `device-tests.txt`) and screenshots of every screen (`screenshots.zip`) are attached to each release.
+
+On-device tests (`app/src/androidTest/`) cover the real app end to end: open the sample book → tap the word "curious" → Arabic translation, definition and IPA appear → save → word is in My Dictionary and underlined in the text; Library, book details, Progress, Settings, dark mode and the Arabic (RTL) interface; importing TXT, EPUB and PDF files; downloading a Gutenberg book; online search; live dictionary lookup and caching; downloading the offline Arabic pack and translating offline; exporting a PDF with Arabic.
+
 `app/src/test/` contains JVM and Robolectric tests for:
 - Gutenberg cleanup, paragraph building, long-paragraph splitting, PDF paragraph rebuilding, HTML → text
 - Tap-to-word detection, word normalisation, sentence extraction, difficulty estimation
