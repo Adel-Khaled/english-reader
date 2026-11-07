@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- left page -->
+    <path android:fillColor="#FFF6EFE2"
+        android:pathData="M30,38 C38,35 46,36 53,40 L53,74 C46,70 38,69 30,72 Z" />
+    <!-- right page -->
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M78,38 C70,35 62,36 55,40 L55,74 C62,70 70,69 78,72 Z" />
+    <!-- lines on left page -->
+    <path android:strokeColor="#FF1F5F5B" android:strokeWidth="1.6" android:strokeLineCap="round"
+        android:pathData="M35,46 L48,47 M35,52 L48,53 M35,58 L48,59 M35,64 L44,64.5" />
+    <!-- highlighted word on right page -->
+    <path android:fillColor="#FFF2B544"
+        android:pathData="M59,46 L73,45 L73,51 L59,52 Z" />
+    <path android:strokeColor="#FF1F5F5B" android:strokeWidth="1.6" android:strokeLineCap="round"
+        android:pathData="M60,58 L73,57 M60,64 L70,63.5" />
+</vector>
