@@ -116,6 +116,7 @@ class RepositoryDeviceTest {
         }
         val l = c.lookup.lookup("brave")
         android.util.Log.i("LookupTest", "combined brave -> ${l.translationAr} (${l.translationSource}) ipa=${l.phonetic}")
+        Unit
     }
 
     @Test fun exportPdfOnDevice() {
