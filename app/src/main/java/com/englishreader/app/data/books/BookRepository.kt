@@ -110,9 +110,12 @@ class BookRepository(
     suspend fun importFromUri(uri: Uri): BookEntity = withContext(Dispatchers.IO) {
         val resolver = context.contentResolver
         var name = "Imported book"
-        resolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { c ->
-            if (c.moveToFirst()) c.getString(0)?.let { name = it }
-        }
+        val fromQuery = runCatching {
+            resolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { c ->
+                if (c.moveToFirst()) c.getString(0) else null
+            }
+        }.getOrNull()
+        name = fromQuery ?: uri.lastPathSegment?.substringAfterLast('/') ?: name
         val mime = resolver.getType(uri).orEmpty()
         val ext = name.substringAfterLast('.', "").lowercase()
         val format = when {

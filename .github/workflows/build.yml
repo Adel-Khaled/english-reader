@@ -1,9 +1,12 @@
-name: Build APK
+name: Build & Test APK
 
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -20,6 +23,20 @@ jobs:
         run: chmod +x gradlew
       - name: Unit tests
         run: ./gradlew --no-daemon testDebugUnitTest
+      - name: Unit test summary
+        if: always()
+        run: |
+          python3 - <<'PY' | tee unit-tests.txt
+          import glob, xml.etree.ElementTree as ET
+          t=f=e=s=0
+          for p in glob.glob('app/build/test-results/testDebugUnitTest/*.xml'):
+              r=ET.parse(p).getroot()
+              t+=int(r.get('tests'));f+=int(r.get('failures'));e+=int(r.get('errors'));s+=int(r.get('skipped'))
+              for c in r.iter('testcase'):
+                  bad = c.find('failure') is not None or c.find('error') is not None
+                  print(('FAIL ' if bad else 'ok   ') + r.get('name').split('.')[-1] + '.' + c.get('name'))
+          print(f'UNIT TESTS: {t} run, {f} failures, {e} errors, {s} skipped')
+          PY
       - name: Build release APK
         run: ./gradlew --no-daemon assembleRelease
       - name: Rename APK
@@ -28,8 +45,75 @@ jobs:
         with:
           name: EnglishReader-apk
           path: EnglishReader-v1.0.0.apk
-      - uses: actions/upload-artifact@v4
-        if: always()
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
         with:
-          name: test-reports
-          path: app/build/reports/tests/
+          tag_name: build-${{ github.run_number }}
+          name: English Reader v1.0.0 (build ${{ github.run_number }})
+          body: |
+            Download **EnglishReader-v1.0.0.apk** below and open it on your Android phone (Android 8.0+).
+            Commit ${{ github.sha }}
+          files: |
+            EnglishReader-v1.0.0.apk
+            unit-tests.txt
+
+  device-test:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Build test APKs
+        run: chmod +x gradlew && ./gradlew --no-daemon assembleDebug assembleDebugAndroidTest
+      - name: Run tests on Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 31
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: |
+            ./gradlew --no-daemon connectedDebugAndroidTest > device-test-log.txt 2>&1 || echo "DEVICE TESTS FAILED" >> device-test-log.txt
+            adb logcat -d -s LookupTest:I AndroidRuntime:E TestRunner:* > logcat.txt || true
+            mkdir -p screens && adb pull /data/local/tmp/screens/. screens/ || true
+      - name: Summarise device tests
+        if: always()
+        run: |
+          python3 - <<'PY' | tee device-tests.txt
+          import glob, xml.etree.ElementTree as ET
+          t=f=0
+          for p in glob.glob('app/build/outputs/androidTest-results/connected/**/*.xml', recursive=True):
+              r=ET.parse(p).getroot()
+              for c in r.iter('testcase'):
+                  t+=1
+                  fl=c.find('failure')
+                  if fl is not None:
+                      f+=1; print('FAIL', c.get('classname').split('.')[-1]+'.'+c.get('name')); print((fl.text or '')[:2500])
+                  else: print('ok  ', c.get('classname').split('.')[-1]+'.'+c.get('name'))
+          print(f'DEVICE TESTS: {t} run, {f} failures')
+          PY
+          echo "----- gradle log tail -----" >> device-tests.txt
+          tail -60 device-test-log.txt >> device-tests.txt || true
+          echo "----- logcat -----" >> device-tests.txt
+          tail -80 logcat.txt >> device-tests.txt || true
+          cd screens && zip -q ../screenshots.zip * || true
+      - name: Attach results to release
+        if: always()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          files: |
+            device-tests.txt
+            screenshots.zip
